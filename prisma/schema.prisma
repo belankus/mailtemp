@@ -1,0 +1,39 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Address {
+  address      String    @id
+  token        String
+  createdAt    DateTime  @default(now())
+  lastAccessAt DateTime  @updatedAt
+  expiresAt    DateTime
+  messages     Message[] // Relasi satu ke banyak (one-to-many)
+}
+
+model Message {
+  id            String   @id @default(uuid()) // ID pesan (auto-generated UUID)
+  addressId     String
+  address       Address  @relation(fields: [addressId], references: [address]) // Relasi ke Address
+  fromAddr      String
+  subject       String?
+  receivedAt    DateTime @default(now())
+  snippet       String?
+  r2KeyEml      String
+  r2KeysAttach  String[]
+  textBody      String?
+  htmlSanitized String?
+  ttl           DateTime @default(now()) @updatedAt
+}
