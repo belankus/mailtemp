@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Mail, Key } from "lucide-react";
 import useToast from "@/components/Toast";
 import InboxViewer from "./InboxViewer";
 
@@ -57,46 +58,74 @@ export default function UseExistingEmail({ onSelect }: Props) {
   }
 
   return (
-    <div className="container mx-auto my-10 max-w-2xl space-y-3 rounded-2xl border bg-white p-5 shadow-sm">
-      <h3 className="text-sm font-semibold text-slate-700">
-        Use Existing Email
-      </h3>
+    <div className="container mx-auto my-10 px-5 md:px-6">
+      <div className="mx-auto max-w-2xl">
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-shadow duration-200 hover:shadow-md">
+          <div className="mb-6 text-center">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Use Existing Email
+            </h3>
+            <p className="mt-1 text-sm text-slate-600">
+              Enter your temporary email address and access token
+            </p>
+          </div>
 
-      <div className="flex flex-col gap-2">
-        <input
-          type="email"
-          placeholder="Enter your temp email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="rounded border px-3 py-2 text-sm"
-        />
-        <input
-          type="text"
-          placeholder="Enter access token"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          className="rounded border px-3 py-2 text-sm"
-        />
-        <button
-          onClick={handleUseExisting}
-          disabled={loading}
-          className="mt-2 w-full rounded-xl bg-blue-600 px-6 py-2 text-white hover:bg-blue-500 disabled:opacity-60"
-        >
-          {loading ? "Loading…" : "Use Existing Email"}
-        </button>
-      </div>
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Mail className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="email"
+                placeholder="Enter your temp email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 py-3 pr-4 pl-10 text-sm placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-slate-900 focus:outline-none"
+              />
+            </div>
 
-      {error && (
-        <p className="mt-2 rounded-md border border-red-200 bg-red-50 p-2 text-sm text-red-700">
-          {error}
-        </p>
-      )}
+            <div className="relative">
+              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                <Key className="h-4 w-4 text-slate-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Enter access token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                className="w-full rounded-xl border border-slate-300 py-3 pr-4 pl-10 text-sm placeholder-slate-500 transition-all duration-200 focus:border-transparent focus:ring-2 focus:ring-slate-900 focus:outline-none"
+              />
+            </div>
 
-      {showInbox && (
-        <div className="mt-4">
-          <InboxViewer address={email} token={token} />
+            <button
+              onClick={handleUseExisting}
+              disabled={loading || !email || !token}
+              className="w-full rounded-xl bg-slate-900 px-6 py-3 font-medium text-white transition-all duration-200 hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  Loading...
+                </span>
+              ) : (
+                "Access Inbox"
+              )}
+            </button>
+          </div>
+
+          {error && (
+            <div className="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm leading-relaxed text-red-700">{error}</p>
+            </div>
+          )}
         </div>
-      )}
+
+        {showInbox && (
+          <div className="mt-6">
+            <InboxViewer address={email} token={token} />
+          </div>
+        )}
+      </div>
 
       {ToastUI}
     </div>
