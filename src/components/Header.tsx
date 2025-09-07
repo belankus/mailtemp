@@ -2,6 +2,7 @@
 "use client";
 
 import { Menu, X } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -51,7 +52,7 @@ export default function Header() {
 
         {/* Logo */}
         <Link href="/" className="font-semibold" onClick={closeMenu}>
-          MailTemp
+          <Image src="/logo.png" alt="MailTemp" width={150} height={30} />
         </Link>
 
         {/* Desktop Navigation - Hidden on mobile */}
