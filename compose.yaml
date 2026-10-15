@@ -1,0 +1,73 @@
+services:
+  app:
+    image: ${APP_IMAGE:-ghcr.io/belankus/mailtemp}:${IMAGE_TAG:-latest}
+    platform: linux/arm64
+    restart: unless-stopped
+    networks:
+      default:
+      proxy:
+        aliases:
+          - mailtemp
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://mailtemp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/mailtemp?schema=public}
+      REDIS_URL: redis://redis:6379
+      API_TOKEN: ${API_TOKEN:?Set API_TOKEN}
+      NEXT_PUBLIC_DOMAIN: ${NEXT_PUBLIC_DOMAIN:?Set NEXT_PUBLIC_DOMAIN}
+      BASE_STORAGE_URL: ${BASE_STORAGE_URL:?Set BASE_STORAGE_URL}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  migrate:
+    image: ${MIGRATE_IMAGE:-ghcr.io/belankus/mailtemp-migrate}:${IMAGE_TAG:-latest}
+    platform: linux/arm64
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://mailtemp:${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}@postgres:5432/mailtemp?schema=public}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  postgres:
+    image: postgres:17-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mailtemp
+      POSTGRES_DB: mailtemp
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mailtemp -d mailtemp"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7.4-bookworm
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "noeviction"]
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  proxy:
+    external: true
+    name: proxy
